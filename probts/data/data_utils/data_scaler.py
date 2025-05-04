@@ -9,6 +9,7 @@
 import torch
 import torch.nn as nn
 
+
 class Scaler:
     def __init__(self):
         super().__init__()
@@ -28,11 +29,11 @@ class Scaler:
 
 class StandardScaler(Scaler):
     def __init__(
-        self,
-        mean: float = None,
-        std: float = None,
-        epsilon: float = 1e-9,
-        var_specific: bool = True
+            self,
+            mean: float = None,
+            std: float = None,
+            epsilon: float = 1e-9,
+            var_specific: bool = True
     ):
         """
         The class can be used to normalize PyTorch Tensors using native functions. The module does not expect the
@@ -78,7 +79,7 @@ class StandardScaler(Scaler):
     def inverse_transform(self, values):
         if self.mean is None:
             return values
-        
+
         values = values * (self.scale.to(values.device) + self.epsilon)
         values = values + self.mean.to(values.device)
         return values
@@ -86,9 +87,9 @@ class StandardScaler(Scaler):
 
 class TemporalScaler(Scaler):
     def __init__(
-        self,
-        minimum_scale:float = 1e-10,
-        time_first: bool = True
+            self,
+            minimum_scale: float = 1e-10,
+            time_first: bool = True
     ):
         """
         The ``TemporalScaler`` computes a per-item scale according to the average
@@ -107,9 +108,9 @@ class TemporalScaler(Scaler):
         self.time_first = time_first
 
     def fit(
-        self,
-        data: torch.Tensor,
-        observed_indicator: torch.Tensor = None
+            self,
+            data: torch.Tensor,
+            observed_indicator: torch.Tensor = None
     ):
         """
         Fit the scaler to the data.
@@ -171,19 +172,21 @@ class IdentityScaler(Scaler):
     """
     No scaling is applied upon calling the ``IdentityScaler``.
     """
+
     def __init__(self, time_first: bool = True):
         super().__init__()
         self.scale = None
-        
+
     def fit(self, data):
         pass
 
     def transform(self, data):
         return data
-    
+
     def inverse_transform(self, data):
         return data
-    
+
+
 class InstanceNorm(nn.Module):
     def __init__(self, eps=1e-5):
         """
@@ -192,17 +195,18 @@ class InstanceNorm(nn.Module):
         super(InstanceNorm, self).__init__()
         self.eps = eps
 
-    def forward(self, x, mode:str):
+    def forward(self, x, mode: str):
         if mode == 'norm':
             self._get_statistics(x)
             x = self._normalize(x)
         elif mode == 'denorm':
             x = self._denormalize(x)
-        else: raise NotImplementedError
+        else:
+            raise NotImplementedError
         return x
 
     def _get_statistics(self, x):
-        dim2reduce = tuple(range(1, x.ndim-1))
+        dim2reduce = tuple(range(1, x.ndim - 1))
         self.mean = torch.mean(x, dim=dim2reduce, keepdim=True).detach()
         self.stdev = torch.sqrt(torch.var(x, dim=dim2reduce, keepdim=True, unbiased=False) + self.eps).detach()
 
@@ -216,3 +220,55 @@ class InstanceNorm(nn.Module):
         x = x + self.mean
         return x
 
+
+class BinaryQuantizer(Scaler):
+    def __init__(self, num_bins=2000, min_val=-3.0, max_val=3.0):
+        super().__init__()
+        self.num_bins = num_bins
+        self.min_val = min_val
+        self.max_val = max_val
+        self.bin_values_ = torch.linspace(self.min_val, self.max_val, self.num_bins)
+
+    def fit(self, values):
+        self.min_val = values.min()
+        self.max_val = values.max()
+        self.bin_values_ = torch.linspace(self.min_val, self.max_val, self.num_bins)
+
+    def fit_transform(self, values):
+        self.fit(values)
+        return self.transform(values)
+
+    def transform(self, values):
+        bin_thresholds = self.bin_values_.reshape(1, 1, -1).to(values.device)
+        return (values >= bin_thresholds).float()
+
+    def inverse_transform(self, values):
+        reversed_bin = torch.flip(values, dims=(-1,))
+        idx_first_one_reversed = reversed_bin.argmax(axis=-1)[..., None]
+        idx_last_one = self.num_bins - 1 - idx_first_one_reversed
+        reconstructed = self.bin_values_[idx_last_one]
+        return reconstructed
+
+
+class StandardBinScaler(Scaler):
+    def __init__(self, standard: StandardScaler, bin: BinaryQuantizer):
+        super().__init__()
+        self.standard = standard
+        self.bin = bin
+
+    def fit(self, X):
+        Z = self.standard.fit_transform(X)
+        self.bin.fit(Z)
+        print('the scaler was fitted')
+
+    def transform(self, X):
+        Z = self.standard.transform(X)
+        return self.bin.transform(Z)
+
+    def fit_transform(self, X):
+        self.fit(X)
+        return self.transform(X)
+
+    def inverse_transform(self, X):
+        Z = self.bin.inverse_transform(X)
+        return self.standard.inverse_transform(Z)
