@@ -9,6 +9,6 @@ do
     do
         python run.py --config config/m4/${DATASET}/${MODEL}.yaml --seed_everything 0  \
             --data.data_manager.init_args.path ${DATA_DIR} \
-            --trainer.default_root_dir ${LOG_DIR} \
+            --trainer.default_root_dir ${LOG_DIR}
     done
 done
