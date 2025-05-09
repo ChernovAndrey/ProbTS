@@ -1,4 +1,4 @@
-export CUDA_VISIBLE_DEVICES=""
+export CUDA_VISIBLE_DEVICES=0
 
 DATA_DIR=./datasets
 LOG_DIR=./exps
@@ -10,6 +10,5 @@ do
         python run.py --config config/m4/${DATASET}/${MODEL}.yaml --seed_everything 0  \
             --data.data_manager.init_args.path ${DATA_DIR} \
             --trainer.default_root_dir ${LOG_DIR} \
-            --trainer.accelerator=cpu
     done
 done
