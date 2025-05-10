@@ -1,7 +1,7 @@
 export CUDA_VISIBLE_DEVICES=0
 
 DATA_DIR=./datasets
-LOG_DIR=./exps
+LOG_DIR=./exps_binconv
 
 for DATASET in 'm4_daily' 'm4_weekly' 'tourism_monthly'
 do

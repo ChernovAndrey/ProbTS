@@ -239,7 +239,8 @@ class BinaryQuantizer(Scaler):
         return self.transform(values)
 
     def transform(self, values):
-        bin_thresholds = self.bin_values_.reshape(1, 1, -1).to(values.device)
+        self.bin_values_ = self.bin_values_.to(values.device)
+        bin_thresholds = self.bin_values_.reshape(1, 1, -1)
         return (values >= bin_thresholds).float()
 
     def inverse_transform(self, values):
