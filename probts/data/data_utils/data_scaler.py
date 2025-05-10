@@ -222,7 +222,7 @@ class InstanceNorm(nn.Module):
 
 
 class BinaryQuantizer(Scaler):
-    def __init__(self, num_bins=2000, min_val=-3.0, max_val=3.0):
+    def __init__(self, num_bins=200, min_val=-10.0, max_val=10.0):
         super().__init__()
         self.num_bins = num_bins
         self.min_val = min_val
@@ -239,7 +239,7 @@ class BinaryQuantizer(Scaler):
         return self.transform(values)
 
     def transform(self, values):
-        bin_thresholds = self.bin_values_.reshape(1, 1, -1).to(values.device)
+        bin_thresholds = self.bin_values_.reshape(1, 1, -1)
         return (values >= bin_thresholds).float()
 
     def inverse_transform(self, values):
@@ -250,19 +250,19 @@ class BinaryQuantizer(Scaler):
         return reconstructed
 
 
-class StandardBinScaler(Scaler):
-    def __init__(self, standard: StandardScaler, bin: BinaryQuantizer):
+class BinScaler(Scaler):
+    def __init__(self, scaler: StandardScaler | TemporalScaler, bin: BinaryQuantizer):
         super().__init__()
-        self.standard = standard
+        self.scaler = scaler
         self.bin = bin
 
     def fit(self, X):
-        Z = self.standard.fit_transform(X)
+        Z = self.scaler.fit_transform(X)
         self.bin.fit(Z)
-        print('the scaler was fitted')
+        # print('the scaler was fitted')
 
     def transform(self, X):
-        Z = self.standard.transform(X)
+        Z = self.scaler.transform(X)
         return self.bin.transform(Z)
 
     def fit_transform(self, X):
@@ -271,4 +271,4 @@ class StandardBinScaler(Scaler):
 
     def inverse_transform(self, X):
         Z = self.bin.inverse_transform(X)
-        return self.standard.inverse_transform(Z)
+        return self.scaler.inverse_transform(Z)

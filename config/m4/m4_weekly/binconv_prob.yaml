@@ -14,14 +14,14 @@ model:
   forecaster:
     class_path: probts.model.forecaster.prob_forecaster.BinConv
     init_args:
-      context_length: 42
+      context_length: 39
       num_bins: 200
-      is_prob_forecast: false
+      is_prob_forecast: true
       scaler_type: standard
       kernel_size_across_bins_2d: 7
       kernel_size_across_bins_1d: 11
-      num_filters_2d: 42
-      num_filters_1d: 42
+      num_filters_2d: 39
+      num_filters_1d: 39
       kernel_size_ffn: 51
       num_1d_layers: 2
       num_blocks: 3
@@ -37,7 +37,7 @@ data:
   data_manager:
     class_path: probts.data.data_manager.DataManager
     init_args:
-      dataset: m4_daily
+      dataset: m4_weekly
       context_length_factor: 3
       split_val: true
       scaler: identity # identity, standard, temporal, standard_binary

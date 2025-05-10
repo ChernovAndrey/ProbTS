@@ -16,7 +16,7 @@ model:
     init_args:
       context_length: 42
       num_bins: 200
-      is_prob_forecast: false
+      is_prob_forecast: true
       scaler_type: standard
       kernel_size_across_bins_2d: 7
       kernel_size_across_bins_1d: 11

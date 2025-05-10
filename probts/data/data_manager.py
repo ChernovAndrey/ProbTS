@@ -14,7 +14,7 @@ from probts.data.data_utils.time_features import get_lags
 from probts.data.data_utils.data_utils import split_train_val, truncate_test, get_rolling_test, df_to_mvds
 from probts.data.data_wrapper import ProbTSBatchData
 from probts.utils.utils import ensure_list
-from probts.data.data_utils.data_scaler import StandardScaler, TemporalScaler, IdentityScaler, StandardBinScaler, \
+from probts.data.data_utils.data_scaler import StandardScaler, TemporalScaler, IdentityScaler, BinScaler, \
     BinaryQuantizer
 from typing import Union
 
@@ -181,8 +181,9 @@ class DataManager:
             return TemporalScaler()
         elif scaler_type == "binary":
             return BinaryQuantizer()
-        elif scaler_type == "standard_binary":
-            return StandardBinScaler(StandardScaler(var_specific=self.var_specific_norm), BinaryQuantizer())
+        elif scaler_type == "normalization+binary":
+            # return StandardBinScaler(StandardScaler(var_specific=self.var_specific_norm), BinaryQuantizer())
+            return BinScaler(TemporalScaler(), BinaryQuantizer())
         return IdentityScaler()
 
     def _load_gift_eval_dataset(self):
