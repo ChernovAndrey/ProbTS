@@ -230,8 +230,8 @@ class BinaryQuantizer(Scaler):
         self.bin_values_ = torch.linspace(self.min_val, self.max_val, self.num_bins)
 
     def fit(self, values):
-        self.min_val = values.min()
-        self.max_val = values.max()
+        self.min_val = values.reshape(-1).min()
+        self.max_val = values.reshape(-1).max()
         self.bin_values_ = torch.linspace(self.min_val, self.max_val, self.num_bins)
 
     def fit_transform(self, values):

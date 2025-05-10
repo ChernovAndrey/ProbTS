@@ -90,7 +90,8 @@ class DynamicTanh(nn.Module):
 
 
 class BinConv(Forecaster):
-    def __init__(self, context_length: int, is_prob_forecast: bool, num_bins: int, kernel_size_across_bins_2d: int = 3,
+    def __init__(self, context_length: int, is_prob_forecast: bool, num_bins: int, min_bin_value=-10.0,
+                 max_bin_value=10.0, kernel_size_across_bins_2d: int = 3,
                  kernel_size_across_bins_1d: int = 3, num_filters_2d: int = 8,
                  num_filters_1d: int = 32, is_cum_sum: bool = False, num_1d_layers: int = 2, num_blocks: int = 3,
                  kernel_size_ffn: int = 51, dropout: float = 0.2,
@@ -102,6 +103,8 @@ class BinConv(Forecaster):
         # Initialize model parameters here
         self.context_length = context_length
         self.num_bins = num_bins
+        print(f'num bins:{num_bins}')
+        print(f'dropout:{dropout}')
         self.is_prob_forecast = is_prob_forecast
         self.num_filters_2d = num_filters_2d
         self.num_filters_1d = num_filters_1d
@@ -112,10 +115,10 @@ class BinConv(Forecaster):
             self.scaler = None
         elif scaler_type == 'standard':
             self.scaler = BinScaler(StandardScaler(var_specific=True),
-                                    BinaryQuantizer())
+                                    BinaryQuantizer(num_bins=num_bins, min_val=min_bin_value, max_val=max_bin_value))
         elif scaler_type == 'temporal':
-            self.scaler = BinScaler(TemporalScaler(),
-                                    BinaryQuantizer())
+            self.scaler = BinScaler(TemporalScaler(time_first=False),
+                                    BinaryQuantizer(num_bins=num_bins, min_val=min_bin_value, max_val=max_bin_value))
         else:
             assert False, f"The scaler type {scaler_type} is not supported"
         self.num_1d_layers = num_1d_layers
@@ -224,9 +227,9 @@ class BinConv(Forecaster):
         """
         # Extract inputs and targets from batch_data
         inputs = self.get_inputs(batch_data, 'all')
-
         if self.scaler is not None:
             self.scaler.fit(inputs.reshape(-1)[:-self.prediction_length])
+            # self.scaler.fit(inputs[:-self.prediction_length])
             inputs = self.scaler.transform(inputs)
 
         target = inputs[:, -self.prediction_length:, :]
