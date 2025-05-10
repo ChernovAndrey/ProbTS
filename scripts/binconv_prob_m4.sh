@@ -5,7 +5,7 @@ LOG_DIR=./exps_binconv
 
 for DATASET in 'm4_daily' 'm4_weekly' 'tourism_monthly'
 do
-    for MODEL in 'binconv'
+    for MODEL in 'binconv_prob'
     do
         python run.py --config config/m4/${DATASET}/${MODEL}.yaml --seed_everything 0  \
             --data.data_manager.init_args.path ${DATA_DIR} \
