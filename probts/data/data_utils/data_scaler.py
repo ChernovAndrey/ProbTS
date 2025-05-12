@@ -165,6 +165,7 @@ class TemporalScaler(Scaler):
         return self.transform(data)
 
     def inverse_transform(self, data):
+        s = data * self.scale.to(data.device)
         return data * self.scale.to(data.device)
 
 
@@ -222,7 +223,7 @@ class InstanceNorm(nn.Module):
 
 
 class BinaryQuantizer(Scaler):
-    def __init__(self, num_bins=200, min_val=-10.0, max_val=10.0):
+    def __init__(self, num_bins=500, min_val=-10.0, max_val=10.0):
         super().__init__()
         self.num_bins = num_bins
         self.min_val = min_val
@@ -230,8 +231,10 @@ class BinaryQuantizer(Scaler):
         self.bin_values_ = torch.linspace(self.min_val, self.max_val, self.num_bins)
 
     def fit(self, values):
-        self.min_val = values.reshape(-1).min()
-        self.max_val = values.reshape(-1).max()
+        # self.min_val = values.reshape(-1).min()
+        # self.max_val = values.reshape(-1).max()
+        self.min_val = values.min()
+        self.max_val = values.max()
         self.bin_values_ = torch.linspace(self.min_val, self.max_val, self.num_bins)
 
     def fit_transform(self, values):
@@ -239,15 +242,35 @@ class BinaryQuantizer(Scaler):
         return self.transform(values)
 
     def transform(self, values):
+        print('bin transform')
+        print('values shape')
+        print(values.shape)
         self.bin_values_ = self.bin_values_.to(values.device)
         bin_thresholds = self.bin_values_.reshape(1, 1, -1)
+
+        if values.shape[-1] > 1:
+            values = values.unsqueeze(-1)
+            bin_thresholds = bin_thresholds.unsqueeze(-2)
+        print( (values >= bin_thresholds).float().shape)
         return (values >= bin_thresholds).float()
 
     def inverse_transform(self, values):
+        if values.shape == 5:
+            values = values.unsqueeze(-1)
+        print('inverse transform')
+        print(values.shape)
         reversed_bin = torch.flip(values, dims=(-1,))
         idx_first_one_reversed = reversed_bin.argmax(axis=-1)[..., None]
         idx_last_one = self.num_bins - 1 - idx_first_one_reversed
         reconstructed = self.bin_values_[idx_last_one]
+        print('reconstructed')
+        print(reconstructed.shape)
+        print(len(reconstructed.shape))
+        if len(reconstructed.shape) == 5:
+            reconstructed = reconstructed.squeeze(-1)
+        print('final reconstructed')
+        print(reconstructed.shape)
+
         return reconstructed
 
 

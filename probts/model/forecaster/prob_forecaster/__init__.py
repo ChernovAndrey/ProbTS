@@ -4,7 +4,7 @@ from .timegrad import TimeGrad
 from .trans_maf import Trans_MAF
 from .csdi import CSDI
 from .tsdiff import TSDiffCond
-from .binconv import BinConv
+from .binconv_multi import BinConv
 
 # ------- add lag_llama to sys.path ---------
 try:
