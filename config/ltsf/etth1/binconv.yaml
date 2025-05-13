@@ -15,7 +15,7 @@ model:
     class_path: probts.model.forecaster.prob_forecaster.BinConv
     init_args:
       context_length: 96
-      num_bins: 500
+      num_bins: 1000
       is_prob_forecast: false
       scaler_type: null # or null
       kernel_size_across_bins_2d: 3 # prev: 3

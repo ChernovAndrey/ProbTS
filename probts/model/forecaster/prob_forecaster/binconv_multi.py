@@ -105,7 +105,6 @@ class BinConv(Forecaster):
         # Initialize model parameters here
         self.context_length = context_length
         self.num_bins = num_bins
-        print(f'num bins:{num_bins}')
         print(f'dropout:{dropout}')
         print(f'target dim: {self.target_dim}')
         self.is_prob_forecast = is_prob_forecast
@@ -225,7 +224,6 @@ class BinConv(Forecaster):
         assert context_length == self.context_length, "Mismatch in context length"
 
         for j in range(self.num_blocks):
-
             residual = x
             x = self.conv_layer(x, self.layers[layer_id]["conv2d"][j], self.layers[layer_id]["act"][j][0],
                                 self.kernel_size_across_bins_2d, True)
@@ -255,17 +253,22 @@ class BinConv(Forecaster):
 
         inputs = self.get_inputs(batch_data, 'all')
         losses = []
-        print(inputs.shape)
         # for c in range(inputs.shape[2]):
-        for c in range(inputs.shape[-2]):
+        if len(inputs.shape) == 4:
+            iter_c = -2
+        else:
+            iter_c = -1
+        for c in range(inputs.shape[iter_c]):
             if self.scalers is not None:
                 self.scalers[c].fit(inputs[:, :, c:c + 1].reshape(-1)[:-self.prediction_length])
                 c_inputs = self.scalers[c].transform(inputs[:, :, c:c + 1])
             else:
                 c_inputs = inputs[:, :, c:c + 1]
-            print(c_inputs.shape)
             target = c_inputs[:, -self.prediction_length:, :]
-            target = target.squeeze()
+
+            if len(target.shape) == 4:
+                target = target.squeeze(-2)
+
             c_inputs = sliding_window_batch(c_inputs, self.context_length, self.prediction_length).float()
             outputs = self(c_inputs.view(-1, *c_inputs.shape[2:]))
 

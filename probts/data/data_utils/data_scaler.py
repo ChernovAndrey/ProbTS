@@ -222,48 +222,109 @@ class InstanceNorm(nn.Module):
         return x
 
 
+# class BinaryQuantizer(Scaler):
+#     def __init__(self, num_bins=500, min_val=-10.0, max_val=10.0):
+#         super().__init__()
+#         self.num_bins = num_bins
+#         print(f'num bins:{num_bins}')
+#         self.min_val = min_val
+#         self.max_val = max_val
+#
+#         # self.bin_values_ = torch.linspace(self.min_val, self.max_val, self.num_bins)
+#         # Compute bin centers (not edges)
+#         bin_edges = torch.linspace(self.min_val, self.max_val, self.num_bins + 1)
+#         self.bin_values_ = 0.5 * (bin_edges[:-1] + bin_edges[1:])  # shape: (num_bins,)
+#
+#     def fit(self, values):
+#         pass
+#         # self.min_val = values.min()
+#         # self.max_val = values.max()
+#         # self.bin_values_ = torch.linspace(self.min_val, self.max_val, self.num_bins)
+#
+#     def fit_transform(self, values):
+#         self.fit(values)
+#         return self.transform(values)
+#
+#     def transform(self, values):
+#         self.bin_values_ = self.bin_values_.to(values.device)
+#         bin_thresholds = self.bin_values_.reshape(1, 1, -1)
+#
+#         if values.shape[-1] > 1:
+#             values = values.unsqueeze(-1)
+#             bin_thresholds = bin_thresholds.unsqueeze(-2)
+#         return (values >= bin_thresholds).float()
+#
+#     def inverse_transform(self, values):
+#         if values.shape == 5:
+#             values = values.unsqueeze(-1)
+#         reversed_bin = torch.flip(values, dims=(-1,))
+#         idx_first_one_reversed = reversed_bin.argmax(axis=-1)[..., None]
+#         idx_last_one = self.num_bins - 1 - idx_first_one_reversed
+#         reconstructed = self.bin_values_[idx_last_one]
+#
+#
+#         #TODO: double check that
+#         # Handle the case where all elements are zero
+#         all_zero_mask = values.sum(dim=-1) == 0
+#         if all_zero_mask.any():
+#             # reconstructed[all_zero_mask] = self.bin_values_[0]
+#             reconstructed[all_zero_mask] = self.min_val
+#
+#         if len(reconstructed.shape) == 5:
+#             reconstructed = reconstructed.squeeze(-1)
+#
+#         return reconstructed
+
 class BinaryQuantizer(Scaler):
     def __init__(self, num_bins=500, min_val=-10.0, max_val=10.0):
         super().__init__()
         self.num_bins = num_bins
         self.min_val = min_val
         self.max_val = max_val
-        self.bin_values_ = torch.linspace(self.min_val, self.max_val, self.num_bins)
+
+        # Bin edges: (num_bins + 1) points from min to max
+        self.bin_edges_ = torch.linspace(self.min_val, self.max_val, self.num_bins + 1)
+
+        # Bin values: midpoints between edges
+        self.bin_values_ = 0.5 * (self.bin_edges_[:-1] + self.bin_edges_[1:])
 
     def fit(self, values):
-        # self.min_val = values.reshape(-1).min()
-        # self.max_val = values.reshape(-1).max()
-        self.min_val = values.min()
-        self.max_val = values.max()
-        self.bin_values_ = torch.linspace(self.min_val, self.max_val, self.num_bins)
+        pass  # no-op for fixed binning
 
     def fit_transform(self, values):
-        self.fit(values)
         return self.transform(values)
 
     def transform(self, values):
+        self.bin_edges_ = self.bin_edges_.to(values.device)
         self.bin_values_ = self.bin_values_.to(values.device)
-        bin_thresholds = self.bin_values_.reshape(1, 1, -1)
+        bin_thresholds = self.bin_edges_[1:].reshape(1, 1, -1)
 
         if values.shape[-1] > 1:
             values = values.unsqueeze(-1)
             bin_thresholds = bin_thresholds.unsqueeze(-2)
+
         return (values >= bin_thresholds).float()
 
     def inverse_transform(self, values):
+        self.bin_edges_ = self.bin_edges_.to(values.device)
+        self.bin_values_ = self.bin_values_.to(values.device)
         if values.shape == 5:
             values = values.unsqueeze(-1)
+
         reversed_bin = torch.flip(values, dims=(-1,))
-        idx_first_one_reversed = reversed_bin.argmax(axis=-1)[..., None]
+        idx_first_one_reversed = reversed_bin.argmax(dim=-1)[..., None]
         idx_last_one = self.num_bins - 1 - idx_first_one_reversed
         reconstructed = self.bin_values_[idx_last_one]
-        if len(reconstructed.shape) == 5:
+
+        # Handle edge case: all-zero => min_val
+        all_zero_mask = values.sum(dim=-1) == 0
+        if all_zero_mask.any():
+            reconstructed[all_zero_mask] = self.bin_values_[0]
+
+        if reconstructed.ndim == 5:
             reconstructed = reconstructed.squeeze(-1)
 
-
         return reconstructed
-
-
 class BinScaler(Scaler):
     def __init__(self, scaler: StandardScaler | TemporalScaler, bin: BinaryQuantizer):
         super().__init__()
