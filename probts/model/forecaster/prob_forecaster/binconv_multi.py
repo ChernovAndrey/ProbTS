@@ -255,6 +255,7 @@ class BinConv(Forecaster):
 
         inputs = self.get_inputs(batch_data, 'all')
         losses = []
+        print(inputs.shape)
         # for c in range(inputs.shape[2]):
         for c in range(inputs.shape[-2]):
             if self.scalers is not None:
@@ -262,6 +263,7 @@ class BinConv(Forecaster):
                 c_inputs = self.scalers[c].transform(inputs[:, :, c:c + 1])
             else:
                 c_inputs = inputs[:, :, c:c + 1]
+            print(c_inputs.shape)
             target = c_inputs[:, -self.prediction_length:, :]
             target = target.squeeze()
             c_inputs = sliding_window_batch(c_inputs, self.context_length, self.prediction_length).float()
