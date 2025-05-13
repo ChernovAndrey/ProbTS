@@ -31,6 +31,7 @@ model:
       use_feat_idx_emb: false
       use_time_feat: false
       use_scaling: false
+  num_samples: 100
   learning_rate: 0.001
   quantiles_num: 20
 data:
