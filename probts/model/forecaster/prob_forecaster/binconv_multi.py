@@ -158,7 +158,6 @@ class BinConv(Forecaster):
                               out_channels=context_length if i == num_1d_layers - 1 else num_filters_1d,
                               kernel_size=kernel_size_across_bins_1d, bias=True,
                               groups=num_filters_1d)
-                    # groups=1)
                     for i in range(num_1d_layers)
                 ]) for _ in range(num_blocks)
             ])
