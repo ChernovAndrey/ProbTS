@@ -281,15 +281,24 @@ class BinaryQuantizer(Scaler):
         self.num_bins = num_bins
         self.min_val = min_val
         self.max_val = max_val
-
+        print(f'num bins:{num_bins}')
+        print(f'min_val: {self.min_val}')
+        print(f'max_val: {self.max_val}')
         # Bin edges: (num_bins + 1) points from min to max
         self.bin_edges_ = torch.linspace(self.min_val, self.max_val, self.num_bins + 1)
 
         # Bin values: midpoints between edges
         self.bin_values_ = 0.5 * (self.bin_edges_[:-1] + self.bin_edges_[1:])
 
+    # def fit(self, values):
+    #     pass  # no-op for fixed binning
     def fit(self, values):
-        pass  # no-op for fixed binning
+        pass
+        # self.min_val = values.min()
+        # self.max_val = values.max()
+        # self.bin_edges_ = torch.linspace(self.min_val, self.max_val, self.num_bins + 1)
+        ## Bin values: midpoints between edges
+        # self.bin_values_ = 0.5 * (self.bin_edges_[:-1] + self.bin_edges_[1:])
 
     def fit_transform(self, values):
         return self.transform(values)

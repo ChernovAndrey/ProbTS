@@ -15,13 +15,15 @@ model:
     class_path: probts.model.forecaster.prob_forecaster.BinConv
     init_args:
       context_length: 72
-      num_bins: 200
+      num_bins: 1000
+      min_bin_value: -5.0
+      max_bin_value: 5.0
       is_prob_forecast: true
       scaler_type: temporal
       kernel_size_across_bins_2d: 3
       kernel_size_across_bins_1d: 3
-      num_filters_2d: 36
-      num_filters_1d: 36
+      num_filters_2d: 72
+      num_filters_1d: 72
       kernel_size_ffn: 51
       num_1d_layers: 2
       num_blocks: 3
