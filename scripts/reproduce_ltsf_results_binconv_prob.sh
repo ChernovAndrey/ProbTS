@@ -27,9 +27,9 @@ CTX_LEN=36
 
 for DATASET in 'illness_ltsf'
 do
-    for MODEL in 'dlinear' 'patchtst' 'gru_nvp' 'timegrad' 'csdi'
+    for MODEL in 'binconv_prob'
     do
-        for PRED_LEN in 24 36 48 60
+        for PRED_LEN in 36
         do
             python run.py --config config/ltsf/${DATASET}/${MODEL}.yaml --seed_everything 0  \
                 --data.data_manager.init_args.path ${DATA_DIR} \
