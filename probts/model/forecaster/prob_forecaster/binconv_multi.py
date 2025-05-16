@@ -135,12 +135,26 @@ class BinConv(Forecaster):
         assert num_filters_2d == num_filters_1d, "todo: change the self.act shape if not"
         self.act = nn.ModuleList([
             nn.ModuleList([
-                # DynamicTanh(normalized_shape=num_filters_2d if i == 0 else num_filters_1d, channels_last=False)
                 DynamicTanh(normalized_shape=num_filters_2d if i < self.num_1d_layers else context_length,
                             channels_last=False)
-                for i in range(self.num_1d_layers + 1)  # applied after conv2d, and all conv1d including the last one
+                for i in range(1)  # applied only after conv2d
+                # for i in range(self.num_1d_layers + 1)  # applied only after conv2d
             ]) for _ in range(self.num_blocks)
         ])
+        # self.act = nn.ModuleList([
+        #     nn.ModuleList([
+        #         nn.Sequential(
+        #             nn.LayerNorm(
+        #                 normalized_shape=(num_filters_2d if i < self.num_1d_layers else context_length)
+        #             ),
+        #             nn.ReLU()
+        #         )
+        #         for i in range(1)
+        #     ])
+        #     for _ in range(self.num_blocks)
+        # ]) # used only for ablation study
+        print('activation functions after conv2d:')
+        print(self.act)
 
         layers = []
         for i in range(kwargs['target_dim']):
@@ -161,6 +175,7 @@ class BinConv(Forecaster):
                     for i in range(num_1d_layers)
                 ]) for _ in range(num_blocks)
             ])
+
             conv_ffn = nn.Conv1d(
                 in_channels=context_length,
                 out_channels=1,
@@ -168,13 +183,27 @@ class BinConv(Forecaster):
                 groups=1,
                 bias=True
             )
+            # class MeanOverChannel(nn.Module):
+            #     def __init__(self, dim=-2):
+            #         super().__init__()
+            #         self.dim = dim
+            #
+            #     def forward(self, x):
+            #         return x.mean(dim=self.dim)
+            #
+            #
+            # conv_ffn = nn.Sequential(
+            #     MeanOverChannel(dim=-2),  # Averages over the channel dimension
+            #     nn.Linear(in_features=self.num_bins, out_features=self.num_bins, bias=True)
+            # ) was used for mlp ablation study
+
             assert num_filters_2d == num_filters_1d, "todo: change the self.act shape if not"
             act = nn.ModuleList([
                 nn.ModuleList([
                     # DynamicTanh(normalized_shape=num_filters_2d if i == 0 else num_filters_1d, channels_last=False)
                     DynamicTanh(normalized_shape=num_filters_2d if i < self.num_1d_layers else context_length,
                                 channels_last=False)
-                    for i in range(self.num_1d_layers + 1)
+                    for i in range(1)
                     # applied after conv2d, and all conv1d including the last one
                 ]) for _ in range(self.num_blocks)
             ])

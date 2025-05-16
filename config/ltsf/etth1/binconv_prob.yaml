@@ -16,12 +16,12 @@ model:
     init_args:
       context_length: 96
       num_bins: 1000
-      is_prob_forecast: false
+      is_prob_forecast: true
       scaler_type: null # or null
       kernel_size_across_bins_2d: 3 # prev: 3
       kernel_size_across_bins_1d: 3 # prev: 11 #what about 7,7?
-      num_filters_2d: 48
-      num_filters_1d: 48
+      num_filters_2d: 96
+      num_filters_1d: 96
       kernel_size_ffn: 51
       num_1d_layers: 2
       num_blocks: 3

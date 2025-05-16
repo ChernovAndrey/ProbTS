@@ -173,3 +173,4 @@ log/
 *.LSOverride
 *__MACOSX
 /time_comparison/
+/avg_performance/
