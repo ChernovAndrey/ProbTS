@@ -1,7 +1,7 @@
 export CUDA_VISIBLE_DEVICES=0
 
 DATA_DIR=./datasets
-LOG_DIR=./exps_binconv_prob_ltsf_96
+LOG_DIR=./exps_binconv_prob_ltsf_96_nbins_1000
 
 
 CTX_LEN=96
