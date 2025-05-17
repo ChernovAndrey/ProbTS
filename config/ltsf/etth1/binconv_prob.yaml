@@ -16,6 +16,8 @@ model:
     init_args:
       context_length: 96
       num_bins: 1000
+      min_bin_value: -10
+      max_bin_value: 10
       is_prob_forecast: true
       scaler_type: null # or null
       kernel_size_across_bins_2d: 3 # prev: 3
