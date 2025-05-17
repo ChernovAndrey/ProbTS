@@ -276,7 +276,7 @@ class InstanceNorm(nn.Module):
 #         return reconstructed
 
 class BinaryQuantizer(Scaler):
-    def __init__(self, num_bins=500, min_val=-10.0, max_val=10.0):
+    def __init__(self, num_bins=1000, min_val=-10.0, max_val=10.0):
         super().__init__()
         self.num_bins = num_bins
         self.min_val = min_val
