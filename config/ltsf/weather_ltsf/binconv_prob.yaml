@@ -9,7 +9,7 @@ trainer:
   limit_train_batches: 100
   log_every_n_steps: 1
   default_root_dir: ./results
-  accumulate_grad_batches: 8
+  accumulate_grad_batches: 3
 model:
   forecaster:
     class_path: probts.model.forecaster.prob_forecaster.BinConv
@@ -41,5 +41,5 @@ data:
       context_length: 96
       prediction_length: 96
   batch_size: 3
-  test_batch_size: 3
+  test_batch_size: 12
   num_workers: 8
