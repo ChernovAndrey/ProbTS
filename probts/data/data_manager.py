@@ -192,7 +192,7 @@ class DataManager:
         elif scaler_type == "temporal+binary":
             print('temporal scaler is applied ')
             return BinScaler(TemporalScaler(),
-                             BinaryQuantizer(num_bins=num_bins, min_val=min_bin_value, max_bin_value=max_bin_value))
+                             BinaryQuantizer(num_bins=num_bins, min_val=min_bin_value, max_val=max_bin_value))
         return IdentityScaler()
 
     def _load_gift_eval_dataset(self):

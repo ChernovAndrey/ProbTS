@@ -9,7 +9,7 @@ trainer:
   limit_train_batches: 100
   log_every_n_steps: 1
   default_root_dir: ./results
-  accumulate_grad_batches: 16
+  accumulate_grad_batches: 4
 model:
   forecaster:
     class_path: probts.model.forecaster.prob_forecaster.BinConv
@@ -37,7 +37,7 @@ data:
     init_args:
       dataset: etth2
       split_val: true
-      scaler: normalization+binary # identity, standard, temporal
+      scaler: temporal+binary # identity, standard, temporal
       context_length: 96
       prediction_length: 96
       num_bins: 500
