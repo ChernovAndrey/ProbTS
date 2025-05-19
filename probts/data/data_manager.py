@@ -134,6 +134,7 @@ class DataManager:
         self.test_rolling_length = test_rolling_length
         self.split_val = split_val
         self.scaler_type = scaler
+        print(f'per dataset scaler_type is {self.scaler_type}')
         self.context_length_factor = context_length_factor
         self.timeenc = timeenc
         self.var_specific_norm = var_specific_norm
