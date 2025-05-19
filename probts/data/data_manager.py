@@ -183,7 +183,9 @@ class DataManager:
             return BinaryQuantizer()
         elif scaler_type == "normalization+binary":
             assert self.var_specific_norm == True, 'it does not make sense to use False for our purposes'
-            # return BinScaler(StandardScaler(var_specific=self.var_specific_norm), BinaryQuantizer())
+            return BinScaler(StandardScaler(var_specific=self.var_specific_norm), BinaryQuantizer())
+        elif scaler_type == "temporal+binary":
+            print('temporal scaler is applied ')
             return BinScaler(TemporalScaler(), BinaryQuantizer())
         return IdentityScaler()
 

@@ -37,9 +37,9 @@ data:
     init_args:
       dataset: etth2
       split_val: true
-      scaler: normalization+binary # identity, standard, temporal
+      scaler: temporal+binary # identity, standard, temporal, normalization+binary, temporal+binary
       context_length: 96
       prediction_length: 96
   batch_size: 3
-  test_batch_size: 3
+  test_batch_size: 12
   num_workers: 8
