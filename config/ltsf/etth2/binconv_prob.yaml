@@ -41,5 +41,5 @@ data:
       context_length: 96
       prediction_length: 96
   batch_size: 3
-  test_batch_size: 12
+  test_batch_size: 32
   num_workers: 8
