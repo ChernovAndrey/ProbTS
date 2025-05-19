@@ -183,8 +183,8 @@ class DataManager:
             return BinaryQuantizer()
         elif scaler_type == "normalization+binary":
             assert self.var_specific_norm == True, 'it does not make sense to use False for our purposes'
-            return BinScaler(StandardScaler(var_specific=self.var_specific_norm), BinaryQuantizer())
-            # return BinScaler(TemporalScaler(), BinaryQuantizer())
+            # return BinScaler(StandardScaler(var_specific=self.var_specific_norm), BinaryQuantizer())
+            return BinScaler(TemporalScaler(), BinaryQuantizer())
         return IdentityScaler()
 
     def _load_gift_eval_dataset(self):
