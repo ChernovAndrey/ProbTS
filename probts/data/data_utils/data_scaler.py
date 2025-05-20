@@ -166,7 +166,7 @@ class TemporalScaler(Scaler):
         return self.transform(data)
 
     def inverse_transform(self, data):
-        s = data * self.scale.to(data.device)
+        print(f'data inverse transform shape: {data.shape}')
         return data * self.scale.to(data.device)
 
 

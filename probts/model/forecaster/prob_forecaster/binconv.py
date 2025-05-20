@@ -350,14 +350,23 @@ class BinConv(Forecaster):
                     next_input = next_input.unsqueeze(1)
                 current_context = torch.cat([current_context[:, 1:], next_input], dim=1)
 
-            c_forecasts = torch.cat(c_forecasts, dim=1)
-            if self.scalers is not None:
-                print('c_forecasts: ', c_forecasts.shape)
-                c_forecasts = self.scalers[c].inverse_transform(c_forecasts)
+            c_forecasts = torch.cat(c_forecasts, dim=1) #TODO: check that you did not break m4 pipeline
+            # if self.scalers is not None:
+            #     print('c_forecasts: ', c_forecasts.shape)
+            #     c_forecasts = self.scalers[c].inverse_transform(c_forecasts)
+            # if do_sample:
+            #     c_forecasts = c_forecasts.view(batch_size, num_samples, *c_forecasts.shape[1:])
+            # else:
+            #     c_forecasts = c_forecasts.unsqueeze(1)  # (B, 1,  T, D)
             if do_sample:
                 c_forecasts = c_forecasts.view(batch_size, num_samples, *c_forecasts.shape[1:])
             else:
                 c_forecasts = c_forecasts.unsqueeze(1)  # (B, 1,  T, D)
+
+            if self.scalers is not None:
+                print('c_forecasts: ', c_forecasts.shape)
+                c_forecasts = self.scalers[c].inverse_transform(c_forecasts)
+
             if inputs.shape[2] > 1:
                 c_forecasts = c_forecasts.unsqueeze(-2)  # (B, 1, T, D, num_bins)
             forecasts_list.append(c_forecasts)
