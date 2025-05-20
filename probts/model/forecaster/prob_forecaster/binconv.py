@@ -323,10 +323,11 @@ class BinConv(Forecaster):
             if self.scalers is not None:
                 if self.target_dim == 1:
                     self.scalers[c].fit(inputs[:, :, c:c + 1].reshape(-1))
+                    c_inputs = self.scalers[c].transform(inputs[:, :, c:c + 1])
                 else:
                     print(inputs[:, :, c:c + 1].squeeze(-1).shape)
-                    self.scalers[c].fit(inputs[:, :, c:c + 1].squeeze(-1))
-                c_inputs = self.scalers[c].transform(inputs[:, :, c:c + 1])
+                    self.scalers[c].fit(inputs[:, :, c])
+                    c_inputs = self.scalers[c].transform(inputs[:, :, c]).unsqueeze(-1)
             else:
                 c_inputs = inputs[:, :, c:c + 1]
 
