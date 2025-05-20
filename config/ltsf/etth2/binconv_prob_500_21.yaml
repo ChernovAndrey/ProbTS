@@ -24,7 +24,7 @@ model:
       kernel_size_across_bins_1d: 3 # prev: 11 #what about 7,7?
       num_filters_2d: 96
       num_filters_1d: 96
-      kernel_size_ffn: 101
+      kernel_size_ffn: 21
       num_1d_layers: 2
       num_blocks: 3
       dropout: 0.35
@@ -44,5 +44,5 @@ data:
       min_bin_value: -10
       max_bin_value: 10
   batch_size: 6
-  test_batch_size: 24
+  test_batch_size: 32
   num_workers: 8
