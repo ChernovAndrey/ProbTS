@@ -126,7 +126,7 @@ class TemporalScaler(Scaler):
         Note:
             Tensor containing the scale, of shape (N, 1, C) or (N, C, 1).
         """
-        print('data:',  data.shape)
+        print('data:', data.shape)
         if self.time_first:
             dim = -2
         else:
@@ -158,6 +158,7 @@ class TemporalScaler(Scaler):
 
         self.scale = torch.max(scale, self.minimum_scale).unsqueeze(dim=dim).detach()
         print('scale shape:', scale.shape)
+
     def transform(self, data):
         return data / self.scale.to(data.device)
 
@@ -165,9 +166,20 @@ class TemporalScaler(Scaler):
         self.fit(data, observed_indicator)
         return self.transform(data)
 
+    # def inverse_transform(self, data):
+    #     print(f'data inverse transform shape: {data.shape}')
+    #     return data * self.scale.to(data.device)
+
     def inverse_transform(self, data):
         print(f'data inverse transform shape: {data.shape}')
-        return data * self.scale.to(data.device)
+        scale = self.scale.to(data.device)
+
+        if scale.ndim > 0 and scale.ndim < data.ndim:
+            # Add trailing singleton dimensions to match data shape
+            shape = list(scale.shape) + [1] * (data.ndim - scale.ndim)
+            scale = scale.view(*shape)
+
+        return data * scale
 
 
 class IdentityScaler(Scaler):
@@ -335,6 +347,8 @@ class BinaryQuantizer(Scaler):
             reconstructed = reconstructed.squeeze(-1)
 
         return reconstructed
+
+
 class BinScaler(Scaler):
     def __init__(self, scaler: StandardScaler | TemporalScaler, bin: BinaryQuantizer):
         super().__init__()
