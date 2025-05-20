@@ -16,8 +16,8 @@ model:
     init_args:
       context_length: 96
       num_bins: 500
-      min_bin_value: -5
-      max_bin_value: 5
+      min_bin_value: -15
+      max_bin_value: 15
       is_prob_forecast: true
       scaler_type: null # or null
       kernel_size_across_bins_2d: 3 # prev: 3
@@ -41,8 +41,8 @@ data:
       context_length: 96
       prediction_length: 96
       num_bins: 500
-      min_bin_value: -10
-      max_bin_value: 10
+      min_bin_value: -15
+      max_bin_value: 15
   batch_size: 8
   test_batch_size: 64
   num_workers: 8
