@@ -314,12 +314,18 @@ class BinConv(Forecaster):
         return loss
 
     def forecast(self, batch_data, num_samples=None):
+        print('forecastr')
         do_sample = num_samples is not None and num_samples > 1 and self.is_prob_forecast
         inputs = self.get_inputs(batch_data, 'encode')
+        print('inputs: ', inputs.shape)
         forecasts_list = []
         for c in range(inputs.shape[2]):
             if self.scalers is not None:
-                self.scalers[c].fit(inputs[:, :, c:c + 1].reshape(-1))
+                if self.target_dim == 1:
+                    self.scalers[c].fit(inputs[:, :, c:c + 1].reshape(-1))
+                else:
+                    print(inputs[:, :, c:c + 1].squeeze(-1).shape)
+                    self.scalers[c].fit(inputs[:, :, c:c + 1].squeeze(-1))
                 c_inputs = self.scalers[c].transform(inputs[:, :, c:c + 1])
             else:
                 c_inputs = inputs[:, :, c:c + 1]
@@ -344,6 +350,7 @@ class BinConv(Forecaster):
 
             c_forecasts = torch.cat(c_forecasts, dim=1)
             if self.scalers is not None:
+                print('c_forecasts: ', c_forecasts.shape)
                 c_forecasts = self.scalers[c].inverse_transform(c_forecasts)
             if do_sample:
                 c_forecasts = c_forecasts.view(batch_size, num_samples, *c_forecasts.shape[1:])
