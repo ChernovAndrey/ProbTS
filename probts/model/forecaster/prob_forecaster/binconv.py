@@ -282,15 +282,12 @@ class BinConv(Forecaster):
 
         inputs = self.get_inputs(batch_data, 'all') # (B, NS, C, D)?
         losses = []
-        print('inputs shape:')
-        print(inputs.shape)
         # for c in range(inputs.shape[2]):
         if len(inputs.shape) == 4:
             iter_c = -2
         else:
             iter_c = -1
         for c in range(inputs.shape[iter_c]):
-            print('iter_c: ', iter_c)
             if self.scalers is not None:
                 if self.target_dim == 1:
                     self.scalers[c].fit(inputs[:, :, c:c + 1].reshape(-1)[:-self.prediction_length])
