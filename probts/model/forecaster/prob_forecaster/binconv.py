@@ -315,10 +315,8 @@ class BinConv(Forecaster):
         return loss
 
     def forecast(self, batch_data, num_samples=None):
-        print('forecastr')
         do_sample = num_samples is not None and num_samples > 1 and self.is_prob_forecast
         inputs = self.get_inputs(batch_data, 'encode')
-        print('inputs: ', inputs.shape)
         forecasts_list = []
         for c in range(inputs.shape[2]):
             if self.scalers is not None:
@@ -326,10 +324,8 @@ class BinConv(Forecaster):
                     self.scalers[c].fit(inputs[:, :, c:c + 1].reshape(-1))
                     c_inputs = self.scalers[c].transform(inputs[:, :, c:c + 1])
                 else:
-                    print(inputs[:, :, c].shape)
                     self.scalers[c].fit(inputs[:, :, c])
                     c_inputs = self.scalers[c].transform(inputs[:, :, c]).squeeze()
-                    print('transformed: ', c_inputs.shape)
             else:
                 c_inputs = inputs[:, :, c:c + 1]
 
@@ -365,7 +361,6 @@ class BinConv(Forecaster):
                 c_forecasts = c_forecasts.unsqueeze(1)  # (B, 1,  T, D)
 
             if self.scalers is not None:
-                print('c_forecasts: ', c_forecasts.shape)
                 c_forecasts = self.scalers[c].inverse_transform(c_forecasts)
 
             if inputs.shape[2] > 1:
@@ -374,5 +369,4 @@ class BinConv(Forecaster):
         forecasts = torch.concat(forecasts_list, dim=-2)  # was 2
         if forecasts.ndim == 5:
             forecasts = forecasts.squeeze()
-        print('final dim:', forecasts.shape)
         return forecasts

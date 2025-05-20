@@ -126,7 +126,6 @@ class TemporalScaler(Scaler):
         Note:
             Tensor containing the scale, of shape (N, 1, C) or (N, C, 1).
         """
-        print('data:', data.shape)
         if self.time_first:
             dim = -2
         else:
@@ -157,7 +156,6 @@ class TemporalScaler(Scaler):
         )
 
         self.scale = torch.max(scale, self.minimum_scale).unsqueeze(dim=dim).detach()
-        print('scale shape:', scale.shape)
 
     def transform(self, data):
         return data / self.scale.to(data.device)
@@ -171,7 +169,6 @@ class TemporalScaler(Scaler):
     #     return data * self.scale.to(data.device)
 
     def inverse_transform(self, data):
-        print(f'data inverse transform shape: {data.shape}')
         scale = self.scale.to(data.device)
 
         if scale.ndim > 0 and scale.ndim < data.ndim:
