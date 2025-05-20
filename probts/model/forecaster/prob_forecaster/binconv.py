@@ -294,9 +294,10 @@ class BinConv(Forecaster):
             if self.scalers is not None:
                 if self.target_dim == 1:
                     self.scalers[c].fit(inputs[:, :, c:c + 1].reshape(-1)[:-self.prediction_length])
+                    c_inputs = self.scalers[c].transform(inputs[:, :, c:c + 1])
                 else:
-                    self.scalers[c].fit(inputs[:, :, c:c + 1][:-self.prediction_length])
-                c_inputs = self.scalers[c].transform(inputs[:, :, c:c + 1])
+                    self.scalers[c].fit(inputs[:, :, c])
+                    c_inputs = self.scalers[c].transform(inputs[:, :, c]).squeeze()
             else:
                 c_inputs = inputs[:, :, c:c + 1]
             target = c_inputs[:, -self.prediction_length:, :]
