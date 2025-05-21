@@ -4,7 +4,7 @@ trainer:
   accelerator: gpu
   devices: 1
   strategy: auto
-  max_epochs: 5
+  max_epochs: 50
   use_distributed_sampler: false
   limit_train_batches: 800
   log_every_n_steps: 2
@@ -33,7 +33,7 @@ model:
       use_feat_idx_emb: false
       use_time_feat: false
       use_scaling: false
-  learning_rate: 0.001
+  learning_rate: 0.01
   quantiles_num: 20
 data:
   data_manager:
