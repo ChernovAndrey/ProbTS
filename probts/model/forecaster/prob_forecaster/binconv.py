@@ -5,12 +5,15 @@ import torch.nn.functional as F
 from probts.utils import repeat
 from typing import Literal, Union
 from probts.data.data_utils.data_scaler import StandardScaler, TemporalScaler, BinScaler, \
-    BinaryQuantizer
+    BinaryQuantizer, OneHotQuantizer
 
 
 def sliding_window_batch(x, L, H):
     if len(x.shape) == 4:
-        x = x.squeeze()
+        if x.shape[0] == 1:
+            x = x.squeeze(-2)
+        else:  # TODO: probably should be fine to do always x.squeeze(-2)
+            x = x.squeeze()
     """
     x: Tensor of shape (B, L+H, C)
     Returns: Tensor of shape (B, H, L, C)
@@ -97,7 +100,8 @@ class BinConv(Forecaster):
                  kernel_size_across_bins_1d: int = 3, num_filters_2d: int = 8,
                  num_filters_1d: int = 32, is_cum_sum: bool = False, num_1d_layers: int = 2, num_blocks: int = 3,
                  kernel_size_ffn: int = 51, dropout: float = 0.2, use_layer_norm: bool = False,
-                 scaler_type: Union[Literal["standard", "temporal", "None"], None] = "temporal", **kwargs) -> None:
+                 scaler_type: Union[Literal["standard", "temporal", "temporal+onehot", "None"], None] = "temporal",
+                 **kwargs) -> None:
         """
         Initialize the model with parameters.
         """
@@ -113,7 +117,7 @@ class BinConv(Forecaster):
         self.kernel_size_across_bins_2d = kernel_size_across_bins_2d
         self.kernel_size_across_bins_1d = kernel_size_across_bins_1d
         self.is_cum_sum = is_cum_sum
-
+        self.scaler_type = scaler_type
         print(f'per sample scaler type is {scaler_type}')
         if scaler_type is None:
             self.scalers = None
@@ -124,6 +128,10 @@ class BinConv(Forecaster):
         elif scaler_type == 'temporal':
             self.scalers = [BinScaler(TemporalScaler(time_first=False),
                                       BinaryQuantizer(num_bins=num_bins, min_val=min_bin_value, max_val=max_bin_value))
+                            for _ in range(self.target_dim)]
+        elif scaler_type == 'temporal+onehot':
+            self.scalers = [BinScaler(TemporalScaler(time_first=False),
+                                      OneHotQuantizer(num_bins=num_bins, min_val=min_bin_value, max_val=max_bin_value))
                             for _ in range(self.target_dim)]
         else:
             assert False, f"The scaler type {scaler_type} is not supported"
@@ -249,7 +257,10 @@ class BinConv(Forecaster):
 
     def forward(self, x, layer_id=0):
         if len(x.shape) == 4:
-            x = x.squeeze()
+            if x.shape[0] == 1:
+                x = x.squeeze(-2)
+            else:  # TODO: probably should be fine to do always x.squeeze(-2)
+                x = x.squeeze()
         x = x.float()
         # x: (batch_size, context_length, num_bins)
 
@@ -309,7 +320,13 @@ class BinConv(Forecaster):
             c_inputs = sliding_window_batch(c_inputs, self.context_length, self.prediction_length).float()
             outputs = self(c_inputs.view(-1, *c_inputs.shape[2:]))
 
-            c_loss = F.binary_cross_entropy_with_logits(input=outputs, target=target.reshape(-1, *target.shape[2:]), )
+            if self.scaler_type == "temporal+onehot":
+                target = target.reshape(-1, *target.shape[2:])
+                target_indices = target.argmax(dim=1)
+                c_loss = F.cross_entropy(input=outputs, target=target_indices)
+            else:
+                c_loss = F.binary_cross_entropy_with_logits(input=outputs,
+                                                            target=target.reshape(-1, *target.shape[2:]), )
             losses.append(c_loss)
         loss = torch.stack(losses).mean()
         # print(f'loss: {loss}')
@@ -332,17 +349,24 @@ class BinConv(Forecaster):
 
             if do_sample:
                 if c_inputs.ndim == 2:
-                    c_inputs = c_inputs.unsqueeze(0) # meaning that batch size = 1
+                    c_inputs = c_inputs.unsqueeze(0)  # meaning that batch size = 1
                 c_inputs = repeat(c_inputs.unsqueeze(1), num_samples, 1)  # (B, NS, T, D)
                 batch_size = c_inputs.shape[0]
                 c_inputs = c_inputs.view(-1, *c_inputs.shape[2:])
             current_context = c_inputs.clone()
             c_forecasts = []
             for _ in range(self.prediction_length):
-                pred = F.sigmoid(self(current_context))  # (B, D)
-                # print(pred.min(), pred.max())
-                pred, _ = get_sequence_from_prob(pred, do_sample)
-                pred = pred.int()
+                if self.scaler_type == 'temporal+onehot':
+                    logits = self(current_context)  # (N, C)
+                    probs = F.softmax(logits, dim=1)  # (N, C)
+                    pred_indices = torch.argmax(probs, dim=1, keepdim=True)
+                    pred_one_hot = F.one_hot(pred_indices, num_classes=probs.size(1)).float()
+                    pred = pred_one_hot.squeeze(1)
+                else:
+                    pred = F.sigmoid(self(current_context))  # (B, D)
+                    # print(pred.min(), pred.max())
+                    pred, _ = get_sequence_from_prob(pred, do_sample)
+                    pred = pred.int()
                 c_forecasts.append(pred.unsqueeze(1))  # (B, 1, D)
                 next_input = pred.unsqueeze(1)
 

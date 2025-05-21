@@ -171,13 +171,6 @@ class DataManager:
             # Print configuration details
             self._print_configurations()
 
-    # def _configure_scaler(self, scaler_type: str):
-    #     """Configure the scaler."""
-    #     if scaler_type == "standard":
-    #         return StandardScaler(var_specific=self.var_specific_norm)
-    #     elif scaler_type == "temporal":
-    #         return TemporalScaler()
-    #     return IdentityScaler()
     def _configure_scaler(self, scaler_type: str, num_bins, min_bin_value, max_bin_value):
         """Configure the scaler."""
         if scaler_type == "standard":
@@ -188,7 +181,8 @@ class DataManager:
             return BinaryQuantizer()
         elif scaler_type == "normalization+binary":
             assert self.var_specific_norm == True, 'it does not make sense to use False for our purposes'
-            return BinScaler(StandardScaler(var_specific=self.var_specific_norm), BinaryQuantizer())
+            return BinScaler(StandardScaler(var_specific=self.var_specific_norm),
+                             BinaryQuantizer(num_bins=num_bins, min_val=min_bin_value, max_val=max_bin_value))
         elif scaler_type == "temporal+binary":
             print('temporal scaler is applied ')
             return BinScaler(TemporalScaler(),
