@@ -252,6 +252,7 @@ class BinConv(Forecaster):
             x = x.squeeze()
         x = x.float()
         # x: (batch_size, context_length, num_bins)
+
         batch_size, context_length, num_bins = x.shape
         assert context_length == self.context_length, "Mismatch in context length"
 
@@ -283,7 +284,7 @@ class BinConv(Forecaster):
         Tensor: Computed loss.
         """
 
-        inputs = self.get_inputs(batch_data, 'all') # (B, NS, C, D)?
+        inputs = self.get_inputs(batch_data, 'all')  # (B, NS, C, D)?
         losses = []
         # for c in range(inputs.shape[2]):
         if len(inputs.shape) == 4:
@@ -330,6 +331,8 @@ class BinConv(Forecaster):
                 c_inputs = inputs[:, :, c:c + 1]
 
             if do_sample:
+                if c_inputs.ndim == 2:
+                    c_inputs = c_inputs.unsqueeze(0) # meaning that batch size = 1
                 c_inputs = repeat(c_inputs.unsqueeze(1), num_samples, 1)  # (B, NS, T, D)
                 batch_size = c_inputs.shape[0]
                 c_inputs = c_inputs.view(-1, *c_inputs.shape[2:])
@@ -347,7 +350,7 @@ class BinConv(Forecaster):
                     next_input = next_input.unsqueeze(1)
                 current_context = torch.cat([current_context[:, 1:], next_input], dim=1)
 
-            c_forecasts = torch.cat(c_forecasts, dim=1) #TODO: check that you did not break m4 pipeline
+            c_forecasts = torch.cat(c_forecasts, dim=1)  # TODO: check that you did not break m4 pipeline
             # if self.scalers is not None:
             #     print('c_forecasts: ', c_forecasts.shape)
             #     c_forecasts = self.scalers[c].inverse_transform(c_forecasts)
