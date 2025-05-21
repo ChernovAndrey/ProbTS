@@ -14,7 +14,7 @@ model:
   forecaster:
     class_path: probts.model.forecaster.prob_forecaster.BinConv
     init_args:
-      context_length: 96
+      context_length: 36
       num_bins: 500
       min_bin_value: -5
       max_bin_value: 5
