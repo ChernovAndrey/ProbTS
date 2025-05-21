@@ -96,7 +96,7 @@ class BinConv(Forecaster):
                  max_bin_value=10.0, kernel_size_across_bins_2d: int = 3,
                  kernel_size_across_bins_1d: int = 3, num_filters_2d: int = 8,
                  num_filters_1d: int = 32, is_cum_sum: bool = False, num_1d_layers: int = 2, num_blocks: int = 3,
-                 kernel_size_ffn: int = 51, dropout: float = 0.2,
+                 kernel_size_ffn: int = 51, dropout: float = 0.2, use_layer_norm: bool = False,
                  scaler_type: Union[Literal["standard", "temporal", "None"], None] = "temporal", **kwargs) -> None:
         """
         Initialize the model with parameters.
@@ -134,26 +134,29 @@ class BinConv(Forecaster):
         # Conv2d over (context_length, num_bins)
 
         assert num_filters_2d == num_filters_1d, "todo: change the self.act shape if not"
-        self.act = nn.ModuleList([
-            nn.ModuleList([
-                DynamicTanh(normalized_shape=num_filters_2d if i < self.num_1d_layers else context_length,
-                            channels_last=False)
-                for i in range(1)  # applied only after conv2d
-                # for i in range(self.num_1d_layers + 1)  # applied only after conv2d
-            ]) for _ in range(self.num_blocks)
-        ])
-        # self.act = nn.ModuleList([
-        #     nn.ModuleList([
-        #         nn.Sequential(
-        #             nn.LayerNorm(
-        #                 normalized_shape=(num_filters_2d if i < self.num_1d_layers else context_length)
-        #             ),
-        #             nn.ReLU()
-        #         )
-        #         for i in range(1)
-        #     ])
-        #     for _ in range(self.num_blocks)
-        # ]) # used only for ablation study
+        if use_layer_norm:
+            self.act = nn.ModuleList([
+                nn.ModuleList([
+                    nn.Sequential(
+                        nn.LayerNorm(
+                            normalized_shape=(num_filters_2d if i < self.num_1d_layers else context_length)
+                        ),
+                        nn.ReLU()
+                    )
+                    for i in range(1)
+                ])
+                for _ in range(self.num_blocks)
+            ])
+        else:
+            self.act = nn.ModuleList([
+                nn.ModuleList([
+                    DynamicTanh(normalized_shape=num_filters_2d if i < self.num_1d_layers else context_length,
+                                channels_last=False)
+                    for i in range(1)  # applied only after conv2d
+                    # for i in range(self.num_1d_layers + 1)  # applied only after conv2d
+                ]) for _ in range(self.num_blocks)
+            ])
+
         print('activation functions after conv2d:')
         print(self.act)
 
