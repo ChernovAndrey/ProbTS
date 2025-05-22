@@ -89,7 +89,7 @@ class TemporalScaler(Scaler):
     def __init__(
             self,
             minimum_scale: float = 1e-10,
-            time_first: bool = True
+            time_first: bool = True,
     ):
         """
         The ``TemporalScaler`` computes a per-item scale according to the average
@@ -183,6 +183,9 @@ class TemporalScaler(Scaler):
 
         print('scale 2')
         print(scale.shape)
+        res = data*scale
+        print('res:')
+        print(res.shape)
         return data * scale
 
 
