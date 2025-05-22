@@ -169,9 +169,7 @@ class TemporalScaler(Scaler):
     #     return data * self.scale.to(data.device)
 
     def inverse_transform(self, data):
-        do_unsqueeze = False
-        if data.shape[-1] == 1:
-            do_unsqueeze = True
+        if (data.shape[-1] == 1) and (data.shape[-2] == self.scale.shape[-1]):
             data = data.squeeze(-1)
         scale = self.scale.to(data.device)
         if scale.ndim > 0 and scale.ndim < data.ndim:
@@ -181,9 +179,6 @@ class TemporalScaler(Scaler):
                 scale = scale.view(*shape)
 
         res = data*scale
-        if do_unsqueeze:
-            res = res.unsqueeze(-1)
-
         return res
 
 
