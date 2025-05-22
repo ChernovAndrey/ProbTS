@@ -172,7 +172,7 @@ class TemporalScaler(Scaler):
         print('data')
         print(data.shape)
         print('scale')
-        print(scale.shape)
+        print(self.scale.shape)
         scale = self.scale.to(data.device)
 
         if scale.ndim > 0 and scale.ndim < data.ndim:
