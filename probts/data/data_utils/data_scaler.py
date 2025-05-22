@@ -182,6 +182,8 @@ class TemporalScaler(Scaler):
 
         print('data 2')
         print(data.shape)
+        print('scale 2')
+        print(self.scale.shape)
         return data * scale
 
 
