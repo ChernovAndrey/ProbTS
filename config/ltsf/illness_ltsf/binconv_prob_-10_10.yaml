@@ -16,8 +16,8 @@ model:
     init_args:
       context_length: 36
       num_bins: 500
-      min_bin_value: -5
-      max_bin_value: 5
+      min_bin_value: -10
+      max_bin_value: 10
       is_prob_forecast: true
       scaler_type: temporal # null or temporal
       kernel_size_across_bins_2d: 3 # prev: 3
