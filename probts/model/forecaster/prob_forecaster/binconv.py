@@ -396,5 +396,5 @@ class BinConv(Forecaster):
         forecasts = torch.concat(forecasts_list, dim=-2)  # was 2
         if forecasts.ndim == 5:
             forecasts = forecasts.squeeze()
-        print(forecasts.shape)
+
         return forecasts
