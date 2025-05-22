@@ -176,9 +176,11 @@ class TemporalScaler(Scaler):
         scale = self.scale.to(data.device)
 
         if scale.ndim > 0 and scale.ndim < data.ndim:
-            # Add trailing singleton dimensions to match data shape
-            shape = list(scale.shape) + [1] * (data.ndim - scale.ndim)
-            scale = scale.view(*shape)
+
+            if not  (scale.ndim == 2) and (scale.shape[0] == 1):
+                # Add trailing singleton dimensions to match data shape
+                shape = list(scale.shape) + [1] * (data.ndim - scale.ndim)
+                scale = scale.view(*shape)
 
         print('data 2')
         print(data.shape)
