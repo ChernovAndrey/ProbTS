@@ -174,26 +174,17 @@ class TemporalScaler(Scaler):
             do_unsqueeze = True
             data = data.squeeze(-1)
         scale = self.scale.to(data.device)
-        print('data')
-        print(data.shape)
-        print('scale')
-        print(scale.shape)
         if scale.ndim > 0 and scale.ndim < data.ndim:
-
             if not ((scale.ndim == 2) and (scale.shape[0] == 1)):
                 # Add trailing singleton dimensions to match data shape
                 shape = list(scale.shape) + [1] * (data.ndim - scale.ndim)
                 scale = scale.view(*shape)
 
-        print('scale 2')
-        print(scale.shape)
         res = data*scale
         if do_unsqueeze:
             res = res.unsqueeze(-1)
-        print('res:')
-        print(res.shape)
 
-        return data * scale
+        return res
 
 
 class IdentityScaler(Scaler):
