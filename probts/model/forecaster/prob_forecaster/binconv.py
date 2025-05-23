@@ -234,6 +234,11 @@ class BinConv(Forecaster):
             }))
         self.layers = nn.ModuleList(layers)
 
+        # Print trainable parameters
+        trainable_params = sum(p.numel() for p in self.parameters() if p.requires_grad)
+        print(f"Trainable parameters: {trainable_params:,}")
+        print(f'target_dim:{self.target_dim}')
+
     def _pad_channels(self, tensor: torch.Tensor, pad_size: int, pad_val_left=1.0, pad_val_right=0.0):
         if pad_size == 0:
             return tensor
