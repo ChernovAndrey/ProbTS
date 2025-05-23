@@ -6,11 +6,11 @@ LOG_DIR=./exps
 
 CTX_LEN=96
 
-for DATASET in 'etth1' 'etth2' 'ettm1' 'ettm2' 'weather_ltsf' 'electricity_ltsf' 'exchange_ltsf' 'traffic_ltsf'
+for DATASET in 'etth1' 'etth2' 'ettm1' 'ettm2' 'traffic_ltsf'
 do
     for MODEL in 'dlinear' 'patchtst' 'gru_nvp' 'timegrad' 'csdi'
     do
-        for PRED_LEN in 96 192
+        for PRED_LEN in 96
         do
             python run.py --config config/ltsf/${DATASET}/${MODEL}.yaml --seed_everything 0  \
                 --data.data_manager.init_args.path ${DATA_DIR} \
@@ -29,7 +29,7 @@ for DATASET in 'illness_ltsf'
 do
     for MODEL in 'dlinear' 'patchtst' 'gru_nvp' 'timegrad' 'csdi'
     do
-        for PRED_LEN in 24 36 48 60
+        for PRED_LEN in 36
         do
             python run.py --config config/ltsf/${DATASET}/${MODEL}.yaml --seed_everything 0  \
                 --data.data_manager.init_args.path ${DATA_DIR} \

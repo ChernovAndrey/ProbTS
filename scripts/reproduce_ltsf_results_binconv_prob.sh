@@ -6,7 +6,7 @@ LOG_DIR=./exps_binconv_prob_ltsf_96_nbins_1000
 
 CTX_LEN=96
 
-for DATASET in 'ettm1' 'ettm2' 'weather_ltsf' 'electricity_ltsf' 'traffic_ltsf'
+for DATASET in 'etth1' 'etth2' 'ettm1' 'ettm2'
 do
     for MODEL in 'binconv_prob'
     do
@@ -25,7 +25,6 @@ done
 
 CTX_LEN=36
 
-#for DATASET in 'etth1' 'etth2' 'ettm1' 'ettm2' 'weather_ltsf' 'electricity_ltsf' 'exchange_ltsf' 'traffic_ltsf'
 
 for DATASET in 'illness_ltsf'
 do
