@@ -6,7 +6,7 @@ LOG_DIR=./exps
 
 CTX_LEN=96
 
-for DATASET in 'etth1' 'etth2' 'ettm1' 'ettm2' 'traffic_ltsf'
+for DATASET in 'etth1' 'etth2' 'ettm1' 'ettm2'
 do
     for MODEL in 'dlinear' 'patchtst' 'gru_nvp' 'timegrad' 'csdi'
     do
